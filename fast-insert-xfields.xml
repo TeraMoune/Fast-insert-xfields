@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dleplugin>
+	<name>Fast insert xfields</name>
+	<description>Сохраняет выбранные дополнительные поля с типом перекрёстные ссылки, а так же теги для последующей их вставки в будущем на страницах добавления и редактирования новостей в административной части.</description>
+	<icon></icon>
+	<version></version>
+	<dleversion>15.2</dleversion>
+	<versioncompare>greater</versioncompare>
+	<upgradeurl></upgradeurl>
+	<filedelete>0</filedelete>
+	<needplugin></needplugin>
+	<mnotice>1</mnotice>
+	<mysqlinstall><![CDATA[]]></mysqlinstall>
+	<mysqlupgrade><![CDATA[]]></mysqlupgrade>
+	<mysqlenable><![CDATA[]]></mysqlenable>
+	<mysqldisable><![CDATA[]]></mysqldisable>
+	<mysqldelete><![CDATA[]]></mysqldelete>
+	<phpinstall><![CDATA[]]></phpinstall>
+	<phpupgrade><![CDATA[]]></phpupgrade>
+	<phpenable><![CDATA[]]></phpenable>
+	<phpdisable><![CDATA[]]></phpdisable>
+	<phpdelete><![CDATA[]]></phpdelete>
+	<notice><![CDATA[<p>@<a href="https://t.me/TeraMoune" target="_blank">TeraMoune</a></p>
+<details><summary style="color:green;font-weight:500" role="button">[b]Для благодарности[/b]</summary><ul style="margin-bottom: 0;"><li>[b]<span style="color:rgb(127,43,253);">Ю</span>Money[/b]: 4100115063692304</li><li>[b]<span style="color:#FF8C00;">Qiwi</span> nickname[/b]: TERAMOUNE</li><li>[b]<span style="color:#006cb4;">WMZ[/b]</span>: Z990082286464</li></ul></details>
+<p>Другие плагины на <a href="https://github.com/TeraMoune" target="_blank">[b]GitHub[/b]</a></p>]]></notice>
+	<file name="engine/inc/addnews.php">
+		<operation action="before">
+			<searchcode><![CDATA[$(function(){]]></searchcode>
+			<replacecode><![CDATA[function Check(request, patt) {
+ 	var pattern = new RegExp(patt, 'i');
+ 	return pattern.test(request);
+}
+
+function sortFn( prop ) {
+	
+    return function(a, b) {
+		
+      return b[prop] - a[prop];
+	  
+    }
+} 
+
+function storage_tag_menu() {
+
+    var string_first2 = new Array();
+    $('.tags-menu').remove();
+    $('input[type=\"text\"][name^=\"xfield\"], input#tags').map(function(i, item) {
+        let xf 				= $(item).attr('id');
+        let arr_t_first2 	= new Array();
+      	let arr_tt2 		= new Array();
+        let storage_item 	= localStorage.getItem('dle-tag-'+xf);
+      	if( !storage_item ) return false;
+    	let tmp_arr2 		= storage_item.split('|');
+
+        tmp_arr2.forEach(function(item, i, arr) {
+		  itemt 		= item.split('*');
+		  arr_tt2[i] 	= {name: itemt[0], count: itemt[1]};	
+        });
+ 
+		//У arr_tt2 есть два ключа name и count
+        let newArray2 	= arr_tt2.sort(sortFn('count')); //Сортировка по ключу count
+		newArray2 		= newArray2.slice(0, 10);  //Срез массива до 10 первых значений
+      
+        newArray2.forEach(function(item, i, arr) { 
+     		
+          	var name = item['name'].replace(/'/g, '#39;'); //Замена ' на #39;
+        	arr_t_first2[i] = '<li><a href=\"#\" onclick=\"insert(\''+name+'\',\''+xf+'\', true); return false;\" style=\"border-radius: 5px;padding: 3px;margin:2px 2px;border: 1px solid #00000052;font-size:12px;\">'+item['name']+'</a></li>';
+	  
+     	});
+
+		if( xf == 'tags' )
+			$(item).parents('.col-sm-9').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul></div>');
+     	else
+			$(item).parents('.col-sm-10').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul></div>');
+        
+    });
+
+}
+
+function storage_tag(id, i) {
+
+   	if( !i ) i = 'other';
+   	var we 			= '';
+   	var input_tag 	= id;
+   	storage_item 	= localStorage.getItem('dle-tag-'+i);
+
+   	var arr_t 	= new Array(),
+		arr_t2 	= new Array(),
+		itemt  	= new Array();
+   
+	if(storage_item != '' && storage_item != null) {
+      
+     	var tmp_arr = storage_item.split('|');
+      
+	 	if( tmp_arr.length > 0 ) {
+          
+			tmp_arr.forEach(function(item, i, arr) {
+			  
+				itemt = item.split('*');
+
+				if( id == itemt[0] ) {
+					we =  itemt[0]+'*'+itemt[1];
+					itemt[1]++;
+				}
+				  
+				arr_t[i] 			= itemt[0]+'*'+itemt[1];
+				arr_t2[itemt[0]] 	= itemt[1];
+			
+			});
+
+		}
+	 
+	}
+     
+	if( !arr_t2[id] ){
+		arr_t.push(id+'*1');
+		we = id+'*1';
+	}
+
+    string = arr_t.join('|');
+	localStorage.setItem('dle-tag-'+i, string);
+	storage_tag_menu();
+}
+
+function insert(i, t, g) {
+  	
+  	i = i.replace(/#39;/g, '\''); // Обратная замена #39; на '
+  
+	if( g ) {
+  		$('#'+t).tokenfield('createToken', i);
+    }
+
+	setTimeout(function() {	
+		storage_tag(i, t);
+	}, 50);
+
+	return false;
+}]]></replacecode>
+			<enabled>1</enabled>
+		</operation>
+		<operation action="after">
+			<searchcode><![CDATA[$(function(){]]></searchcode>
+			<replacecode><![CDATA[storage_tag_menu();]]></replacecode>
+			<enabled>1</enabled>
+		</operation>
+		<operation action="replace">
+			<searchcode><![CDATA[   minLength: 3,
+   delay: 500
+},]]></searchcode>
+			<replacecode><![CDATA[  minLength: 2, 
+  delay: 500,
+  select: function( event, ui ) {    
+    let xf = event.target.id.split('-tokenfield');
+	insert(ui.item.value, xf[0]);
+  }
+},]]></replacecode>
+			<searchcount>2</searchcount>
+			<replacecount>1</replacecount>
+			<enabled>1</enabled>
+		</operation>
+	</file>
+	<file name="engine/inc/editnews.php">
+		<operation action="before">
+			<searchcode><![CDATA[$(function(){]]></searchcode>
+			<replacecode><![CDATA[function Check(request, patt) {
+ 	var pattern = new RegExp(patt, 'i');
+ 	return pattern.test(request);
+}
+
+function sortFn( prop ) {
+	
+    return function(a, b) {
+		
+      return b[prop] - a[prop];
+	  
+    }
+} 
+
+function storage_tag_menu() {
+
+    var string_first2 = new Array();
+    $('.tags-menu').remove();
+    $('input[type=\"text\"][name^=\"xfield\"], input#tags').map(function(i, item) {
+        let xf 				= $(item).attr('id');
+        let arr_t_first2 	= new Array();
+      	let arr_tt2 		= new Array();
+        let storage_item 	= localStorage.getItem('dle-tag-'+xf);
+      	if( !storage_item ) return false;
+    	let tmp_arr2 		= storage_item.split('|');
+
+        tmp_arr2.forEach(function(item, i, arr) {
+		  itemt 		= item.split('*');
+		  arr_tt2[i] 	= {name: itemt[0], count: itemt[1]};	
+        });
+ 
+		//У arr_tt2 есть два ключа name и count
+        let newArray2 	= arr_tt2.sort(sortFn('count')); //Сортировка по ключу count
+		newArray2 		= newArray2.slice(0, 10);  //Срез массива до 10 первых значений
+      
+        newArray2.forEach(function(item, i, arr) { 
+     		
+          	var name = item['name'].replace(/'/g, '#39;'); //Замена ' на #39;
+        	arr_t_first2[i] = '<li><a href=\"#\" onclick=\"insert(\''+name+'\',\''+xf+'\', true); return false;\" style=\"border-radius: 5px;padding: 3px;margin:2px 2px;border: 1px solid #00000052;font-size:12px;\">'+item['name']+'</a></li>';
+	  
+     	});
+
+		if( xf == 'tags' )
+			$(item).parents('.col-sm-9').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul></div>');
+     	else
+			$(item).parents('.col-sm-10').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul></div>');
+        
+    });
+
+}
+
+function storage_tag(id, i) {
+
+   	if( !i ) i = 'other';
+   	var we 			= '';
+   	var input_tag 	= id;
+   	storage_item 	= localStorage.getItem('dle-tag-'+i);
+
+   	var arr_t 	= new Array(),
+		arr_t2 	= new Array(),
+		itemt  	= new Array();
+   
+	if(storage_item != '' && storage_item != null) {
+      
+     	var tmp_arr = storage_item.split('|');
+      
+	 	if( tmp_arr.length > 0 ) {
+          
+			tmp_arr.forEach(function(item, i, arr) {
+			  
+				itemt = item.split('*');
+
+				if( id == itemt[0] ) {
+					we =  itemt[0]+'*'+itemt[1];
+					itemt[1]++;
+				}
+				  
+				arr_t[i] 			= itemt[0]+'*'+itemt[1];
+				arr_t2[itemt[0]] 	= itemt[1];
+			
+			});
+
+		}
+	 
+	}
+     
+	if( !arr_t2[id] ){
+		arr_t.push(id+'*1');
+		we = id+'*1';
+	}
+
+    string = arr_t.join('|');
+	localStorage.setItem('dle-tag-'+i, string);
+	storage_tag_menu();
+}
+
+function insert(i, t, g) {
+  	
+  	i = i.replace(/#39;/g, '\''); // Обратная замена #39; на '
+  
+	if( g ) {
+  		$('#'+t).tokenfield('createToken', i);
+    }
+
+	setTimeout(function() {	
+		storage_tag(i, t);
+	}, 50);
+
+	return false;
+}]]></replacecode>
+			<enabled>1</enabled>
+		</operation>
+		<operation action="after">
+			<searchcode><![CDATA[$(function(){]]></searchcode>
+			<replacecode><![CDATA[storage_tag_menu();]]></replacecode>
+			<enabled>1</enabled>
+		</operation>
+		<operation action="replace">
+			<searchcode><![CDATA[  minLength: 3,
+  delay: 500
+},]]></searchcode>
+			<replacecode><![CDATA[  minLength: 2,
+  delay: 500,
+  select: function( event, ui ) {    
+    let xf = event.target.id.split('-tokenfield');
+	insert(ui.item.value, xf[0]);
+  }
+},]]></replacecode>
+			<searchcount>2</searchcount>
+			<replacecount>1</replacecount>
+			<enabled>1</enabled>
+		</operation>
+	</file>
+</dleplugin>
