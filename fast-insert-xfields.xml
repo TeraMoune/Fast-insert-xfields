@@ -4,7 +4,7 @@
 	<description>Сохраняет выбранные дополнительные поля с типом перекрёстные ссылки, а так же теги для последующей их вставки в будущем на страницах добавления и редактирования новостей в административной части.</description>
 	<icon></icon>
 	<version></version>
-	<dleversion>15.2</dleversion>
+	<dleversion>15.1</dleversion>
 	<versioncompare>greater</versioncompare>
 	<upgradeurl></upgradeurl>
 	<filedelete>0</filedelete>
