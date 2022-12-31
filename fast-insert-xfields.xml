@@ -4,7 +4,7 @@
 	<description>Сохраняет выбранные дополнительные поля с типом перекрёстные ссылки, а так же теги для последующей их вставки в будущем на страницах добавления и редактирования новостей в административной части.</description>
 	<icon></icon>
 	<version></version>
-	<dleversion>15.1</dleversion>
+	<dleversion>15.2</dleversion>
 	<versioncompare>greater</versioncompare>
 	<upgradeurl></upgradeurl>
 	<filedelete>0</filedelete>
@@ -69,9 +69,9 @@ function storage_tag_menu() {
      	});
 
 		if( xf == 'tags' )
-			$(item).parents('.col-sm-9').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul></div>');
+			$(item).parents('.col-sm-9').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul> <strong onclick=\"clearTag(\''+xf+'\')\" style=\"cursor:pointer\">[Clear]</strong></div>');
      	else
-			$(item).parents('.col-sm-10').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul></div>');
+			$(item).parents('.col-sm-10').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul> <strong onclick=\"clearTag(\''+xf+'\')\" style=\"cursor:pointer\">[Clear]</strong></div>');
         
     });
 
@@ -122,6 +122,13 @@ function storage_tag(id, i) {
 	storage_tag_menu();
 }
 
+function clearTag(t){
+  	localStorage.setItem('dle-tag-'+t, '');
+  	setTimeout(function() {	
+  		storage_tag_menu();
+  	}, 50);
+}
+                                                                
 function insert(i, t, g) {
   	
   	i = i.replace(/#39;/g, '\''); // Обратная замена #39; на '
@@ -205,14 +212,21 @@ function storage_tag_menu() {
      	});
 
 		if( xf == 'tags' )
-			$(item).parents('.col-sm-9').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul></div>');
+			$(item).parents('.col-sm-9').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul> <strong onclick=\"clearTag(\''+xf+'\')\" style=\"cursor:pointer\">[Clear]</strong></div>');
      	else
-			$(item).parents('.col-sm-10').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul></div>');
+			$(item).parents('.col-sm-10').append('<div class=\"tags-menu\" style=\"margin-top: 10px;\"><ul style=\"line-height: 24px;display: inline-flex;list-style-type: none;padding: 0;\">'+arr_t_first2.join('')+'</ul> <strong onclick=\"clearTag(\''+xf+'\')\" style=\"cursor:pointer\">[Clear]</strong></div>');
         
     });
 
 }
 
+function clearTag(t){
+  	localStorage.setItem('dle-tag-'+t, '');
+  	setTimeout(function() {	
+  		storage_tag_menu();
+  	}, 50);
+}                                                                
+                                                                
 function storage_tag(id, i) {
 
    	if( !i ) i = 'other';
